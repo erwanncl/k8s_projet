@@ -31,6 +31,7 @@ Chaque composant est isolé dans un Pod et exposé par des Services internes.
 | `redis`    | Backend    | Système de file d’attente pour les votes         |
 | `worker`   | Backend    | Application Java qui lit Redis et écrit en base   |
 | `postgres` | Base de données | Stocke les votes                             |
+| `ingress-nginx` | Reverse proxy | Route les requêtes HTTP vers les bons services |
 
 ---
 
