@@ -13,3 +13,11 @@
 # Make port 80 available for links and/or publish
 
 # Define the command to be run when launching the container : `python app.py`
+
+FROM python:3.7-alpine
+WORKDIR /app
+COPY . /app
+RUN pip install -r requirements.txt
+EXPOSE 80
+CMD ["python", "app.py"]
+

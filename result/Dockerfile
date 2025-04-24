@@ -25,3 +25,11 @@
 # Make port 80 available for links and/or publish
 
 # Define the command "nodemon server.js" to be run when launching the container
+
+FROM node:14-alpine
+WORKDIR /app
+COPY . /app
+RUN npm install
+EXPOSE 80
+CMD ["node", "server.js"]
+

@@ -25,3 +25,10 @@ FROM maven:3.5-jdk-8-alpine AS build
 
 # Define the command to be run when launching the container
 CMD ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-jar", "/worker-jar-with-dependencies.jar"]
+
+FROM python:3.7-alpine
+WORKDIR /app
+COPY . /app
+RUN pip install -r requirements.txt
+CMD ["python", "worker.py"]
+
