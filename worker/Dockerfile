@@ -24,11 +24,15 @@ FROM maven:3.5-jdk-8-alpine AS build
 # Copy from the 'build' container the produced jar : /code/target/worker-jar-with-dependencies.jar in the root path of this container : /
 
 # Define the command to be run when launching the container
-CMD ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-jar", "/worker-jar-with-dependencies.jar"]
 
-FROM python:3.7-alpine
+# Étape 1 : build Maven
+FROM maven:3.8.5-openjdk-17 AS builder
 WORKDIR /app
-COPY . /app
-RUN pip install -r requirements.txt
-CMD ["python", "worker.py"]
+COPY . .
+RUN mvn clean package
 
+# Étape 2 : runtime avec le .jar
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+COPY --from=builder /app/target/worker-jar-with-dependencies.jar app.jar
+CMD ["java", "-jar", "app.jar"]

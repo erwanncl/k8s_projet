@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: result
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: result
+  template:
+    metadata:
+      labels:
+        app: result
+    spec:
+      containers:
+      - name: result
+        image: flaviengrs/result
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4000   # 🟢 L'application écoute sur ce port
+        env:
+        - name: DB
+          value: "postgres"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: result
+spec:
+  selector:
+    app: result
+  ports:
+  - port: 80            # 🟢 Port exposé par le service
+    targetPort: 4000    # 🔁 Redirigé vers le port du conteneur

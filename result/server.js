@@ -1,3 +1,5 @@
+console.log('>> IMAGE OK - server.js à jour');
+
 var express = require('express'),
     async = require('async'),
     pg = require('pg'),
@@ -15,7 +17,6 @@ io.set('transports', ['polling']);
 var port = process.env.PORT || 4000;
 
 io.sockets.on('connection', function (socket) {
-
   socket.emit('message', { text : 'Welcome!' });
 
   socket.on('subscribe', function (data) {
@@ -24,25 +25,51 @@ io.sockets.on('connection', function (socket) {
 });
 
 var pool = new pg.Pool({
-  connectionString: 'postgres://postgres:postgres@db/postgres'
+  connectionString: 'postgres://postgres:postgres@postgres/postgres'
 });
 
 async.retry(
   {times: 1000, interval: 1000},
   function(callback) {
-    pool.connect(function(err, client, done) {
-      if (err) {
-        console.error("Waiting for db");
-      }
-      callback(err, client);
-    });
+    console.log("→ Tentative de connexion à la DB...");
+
+    try {
+      pool.connect(function(err, client, done) {
+        console.log("↪ Callback de pool.connect déclenché");
+
+        if (err) {
+          console.error("❌ Connexion échouée", err.message);
+        } else {
+          console.log("✅ Connexion réussie");
+        }
+
+        callback(err, client);
+      });
+    } catch (e) {
+      console.error("💥 Exception dans pool.connect:", e.message);
+      callback(e, null);
+    }
   },
   function(err, client) {
     if (err) {
-      return console.error("Giving up");
+      return console.error("❌ Abandon après plusieurs tentatives :", err.message);
     }
-    console.log("Connected to db");
+
+    console.log("🎉 Connected to db");
     getVotes(client);
+
+    setInterval(function () {
+      client.query('SELECT vote, COUNT(id) AS count FROM votes GROUP BY vote', [], (err, result) => {
+        const scores = { a: 0, b: 0 };
+        if (result && result.rows) {
+          result.rows.forEach(row => {
+            scores[row.vote] = parseInt(row.count);
+          });
+        }
+        console.log("📊 Emitting scores:", scores);
+        io.emit("scores", JSON.stringify(scores));
+      });
+    }, 2000);
   }
 );
 
@@ -55,7 +82,7 @@ function getVotes(client) {
       io.sockets.emit("scores", JSON.stringify(votes));
     }
 
-    setTimeout(function() {getVotes(client) }, 1000);
+    setTimeout(function() { getVotes(client) }, 1000);
   });
 }
 
