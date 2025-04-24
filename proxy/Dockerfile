@@ -6,6 +6,8 @@
 # Utiliser l'image officielle de Nginx
 FROM nginx:alpine
 
-# Copier le fichier de configuration Nginx dans le conteneur
+# Copier les fichiers de configuration Nginx dans le conteneur
 COPY nginx.conf /etc/nginx/nginx.conf
-
+COPY default.conf /etc/nginx/conf.d/default.conf
+COPY proxy.conf /etc/nginx/includes/proxy.conf
+COPY backend-not-found.html /var/www/html/backend-not-found.html
