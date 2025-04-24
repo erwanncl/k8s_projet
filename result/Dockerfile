@@ -7,7 +7,7 @@
 # Copy package*.json from the current folder to the current folder in the container
 
 # Execute the following commands in the container :
-# npm install -g nodemon 
+# npm install -g nodemon
 # npm cache clean --force
 # mv /app/node_modules /node_modules
 
@@ -26,10 +26,12 @@
 
 # Define the command "nodemon server.js" to be run when launching the container
 
-FROM node:14-alpine
+FROM node:14
+
 WORKDIR /app
-COPY . /app
+COPY . .
+
 RUN npm install
-EXPOSE 80
+
 CMD ["node", "server.js"]
 

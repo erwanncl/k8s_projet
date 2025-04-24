@@ -12,7 +12,7 @@ var express = require('express'),
     server = require('http').Server(app),
     io = require('socket.io')(server);
 
-io.set('transports', ['polling']);
+// io.set('transports', ['polling']);
 
 var port = process.env.PORT || 4000;
 

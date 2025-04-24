@@ -1,4 +1,112 @@
+# 🗳️ Projet Kubernetes - Application de vote en microservices
+
+## 📦 Description
+
+Ce projet déploie une application de vote simple sur Kubernetes avec plusieurs microservices :
+- Frontend utilisateur (`vote`)
+- Résultats en temps réel (`result`)
+- File de messages (`redis`)
+- Base de données (`postgres`)
+- Traitement en arrière-plan (`worker`)
+
 ---
+
+## ⚙️ Architecture
+
+```
+Utilisateur → Ingress → vote ⤷
+                          Redis → worker → PostgreSQL ← result ← Ingress
+```
+
+Chaque composant est isolé dans un Pod et exposé par des Services internes.
+
+---
+
+## 🧱 Composants Kubernetes
+
+| Pod        | Rôle       | Description                                         |
+|------------|------------|-----------------------------------------------------|
+| `vote`     | Frontend   | Application Flask permettant de voter              |
+| `result`   | Frontend   | Interface Node.js affichant les résultats en live |
+| `redis`    | Backend    | Système de file d’attente pour les votes         |
+| `worker`   | Backend    | Application Java qui lit Redis et écrit en base   |
+| `postgres` | Base de données | Stocke les votes                             |
+
+---
+
+## 🚀 Lancement de l'application
+
+### 1. 🐳 Build et push des images Docker
+
+Depuis les dossiers `vote/`, `result/`, `worker/` :
+
+```bash
+docker build -t flaviengrs/vote ./vote
+docker build -t flaviengrs/result ./result
+docker build -t flaviengrs/worker ./worker
+
+docker push flaviengrs/vote
+docker push flaviengrs/result
+docker push flaviengrs/worker
+```
+
+> 💡 **Important** : pour le conteneur `result`, assurez-vous que le module PostgreSQL est bien à jour. Depuis le dossier `./result`, exécutez :
+>
+> ```bash
+> npm install pg@8.11.0 --save
+> ```
+
+### 2. ☘️ Déploiement Kubernetes
+
+Depuis la racine du projet :
+
+```bash
+kubectl apply -f k8s/
+```
+
+### 3. 🔍 Vérification
+
+```bash
+kubectl get pods
+kubectl get svc
+kubectl get ingress
+```
+
+---
+
+## 🌐 Accès à l'application
+
+Ajoutez ceci à votre fichier `hosts` (`C:\Windows\System32\drivers\etc\hosts`) :
+
+```
+127.0.0.1 vote.localhost result.localhost
+```
+
+Puis ouvrez :
+- http://vote.localhost pour voter
+- http://result.localhost pour voir les résultats en direct
+
+---
+
+## 💠 Fonctionnement technique
+
+- `vote` publie des messages dans Redis
+- `worker` consomme les messages et insère les votes dans PostgreSQL
+- `result` interroge PostgreSQL et envoie les résultats aux clients via Socket.IO
+
+---
+
+## ✅ Bonnes pratiques appliquées
+
+- Séparation des responsabilités par pod
+- Communication via DNS Kubernetes (`redis`, `postgres`)
+- Reconnexion automatique à PostgreSQL (`async.retry`)
+- Emission régulière des scores (`setInterval`)
+
+
+
+---
+# SUJET
 title: TP Docker,docker-compose,k8s
 author: Tom Avenel
 abstract: Le but de ce TP est d'isoler et de déployer une application dans une stack de conteneurs Docker.
