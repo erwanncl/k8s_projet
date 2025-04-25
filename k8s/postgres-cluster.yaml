@@ -1,0 +1,36 @@
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: my-postgres-cluster
+  namespace: default
+spec:
+  teamId: "acid"
+  volume:
+    size: 1Gi
+  numberOfInstances: 2
+  users:
+    postgres:
+    - superuser
+    - createdb
+  databases:
+    votesdb: postgres
+  postgresql:
+    version: "15"
+  dockerImage: registry.opensource.zalan.do/acid/spilo-15:2.1-p6
+  patroni:
+    pg_hba:
+      - host all all 0.0.0.0/0 md5
+  enableConnectionPooler: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 200m
+      memory: 300Mi
+  env:
+    - name: PGPASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: postgres-secret
+          key: password

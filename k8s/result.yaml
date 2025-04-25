@@ -20,7 +20,7 @@ spec:
         - containerPort: 4000   # 🟢 L'application écoute sur ce port
         env:
         - name: DB
-          value: "postgres"
+          value: "my-postgres-cluster"
 ---
 apiVersion: v1
 kind: Service
