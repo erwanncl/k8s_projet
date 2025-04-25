@@ -31,7 +31,17 @@ Chaque composant est isolé dans un Pod et exposé par des Services internes.
 | `redis`    | Backend    | Système de file d’attente pour les votes         |
 | `worker`   | Backend    | Application Java qui lit Redis et écrit en base   |
 | `postgres` | Base de données | Stocke les votes                             |
-| `ingress-nginx` | Reverse proxy | Route les requêtes HTTP vers les bons services |
+| `ingress-nginx-controller` | Contrôleur Ingress | Route les requêtes externes HTTP vers les bons services internes |
+
+---
+
+## 🔍 Fonctionnement des objets Kubernetes
+
+- **Pod** : Unité d'exécution contenant un ou plusieurs conteneurs. Chaque composant (vote, result...) tourne dans son propre Pod.
+- **Deployment** : Gère la mise à jour et la réplication automatique des Pods. Exemple : `vote` a un Deployment qui assure qu’un Pod est toujours actif.
+- **Service** : Fournit une IP stable pour accéder à un Pod. Il permet aux Pods de communiquer entre eux par nom DNS interne.
+- **Ingress** : Point d’entrée HTTP/HTTPS vers le cluster. Il redirige les requêtes externes (`vote.localhost`) vers les bons services internes.
+- **Ingress Controller** : C’est le Pod `ingress-nginx-controller`. Il lit les objets Ingress et configure dynamiquement le routage HTTP (via NGINX).
 
 ---
 
@@ -103,6 +113,31 @@ Puis ouvrez :
 - Communication via DNS Kubernetes (`redis`, `postgres`)
 - Reconnexion automatique à PostgreSQL (`async.retry`)
 - Emission régulière des scores (`setInterval`)
+
+---
+
+## 🧭 Diagramme simplifié des interactions
+
+```
+[ vote.localhost ]
+        │
+        ▼
+    [ vote pod ] ───┐
+                    ▼
+               [ redis pod ]
+                    │
+                    ▼
+               [ worker pod ]
+                    │
+                    ▼
+              [ postgres pod ]
+                    ▲
+                    │
+              [ result pod ]
+                    ▲
+                    │
+        [ result.localhost ]
+```
 
 
 
